@@ -1,6 +1,7 @@
 package com.lyflexi.basicpractice.collection.list;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,7 +22,8 @@ public class CopyOnWriteArrayListSample {
      * @throws InterruptedException
      */
     public static void main(String[] args) throws InterruptedException {
-        currentWrite();
+//        currentWrite();
+        currentReadWrite();
 //        currentRemove();
 
     }
@@ -40,7 +42,68 @@ public class CopyOnWriteArrayListSample {
         }
     }
 
+    /**
+     * 解决了：
+     *
+     * CopyOnWriteArrayList 的迭代器是安全的，原因如下：
+     *
+     * 迭代器访问的是数组快照：
+     * 当你调用 iterator() 方法时，CopyOnWriteArrayList 会返回一个迭代器，这个迭代器会访问当前的数组副本。
+     * 由于读操作不需要加锁，迭代器在遍历时不会阻塞写操作。
+     *
+     * 写操作不影响现有迭代器：
+     * 写操作会创建一个新的数组副本，并在新的数组副本上完成写操作。
+     * 写操作完成后，array 引用会切换到新的数组，但现有的迭代器仍然访问的是旧的数组副本。
+     * 因此，即使在遍历过程中有写操作发生，迭代器也不会抛出 ConcurrentModificationException，也不会看到部分更新的数据。
+     */
+    public static void currentReadWrite(){
+        List<Integer> list = new CopyOnWriteArrayList<>();
 
+        // 初始化列表
+        for (int i = 0; i < 10000; i++) {
+            list.add(i);
+        }
+
+        // 创建一个读线程
+        Thread reader = new Thread(() -> {
+            Iterator<Integer> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                Integer value = iterator.next();
+                // 模拟读操作的延迟
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("Reader: " + value);
+            }
+        });
+
+        // 创建一个写线程
+        Thread writer = new Thread(() -> {
+            for (int i = 10000; i < 20000; i++) {
+                list.add(i);
+                // 模拟写操作的延迟
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        reader.start();
+        writer.start();
+
+        try {
+            reader.join();
+            writer.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+        }
+
+    }
     /**
      * 解决了
      */

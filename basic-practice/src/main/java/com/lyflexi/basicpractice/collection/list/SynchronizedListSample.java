@@ -1,9 +1,6 @@
 package com.lyflexi.basicpractice.collection.list;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -21,7 +18,8 @@ public class SynchronizedListSample {
      * @throws InterruptedException
      */
     public static void main(String[] args) throws InterruptedException {
-        currentWrite();
+//        currentWrite();
+        currentReadWrite();
 //        currentRemove();
 
     }
@@ -40,7 +38,69 @@ public class SynchronizedListSample {
         }
     }
 
+    /**
+     * synchronizedList依然并发异常问题是因为 Collections.synchronizedList 虽然确保了单个方法调用的线程安全，
+     * 但它并不能防止在多线程环境中对集合的迭代器进行并发修改。具体来说，Collections.synchronizedList 返回的列表的迭代器并不是线程安全的。
+     *
+     * 问题分析
+     * 迭代器的线程安全性：
+     * Collections.synchronizedList 只确保了单个方法调用的线程安全，例如 add、remove、get 等。
+     * 但是，迭代器的 hasNext 和 next 方法并没有被同步，因此在多线程环境中使用迭代器时，可能会抛出 ConcurrentModificationException。
+     * 解决方案：
+     * 你需要在使用迭代器时手动加锁，确保迭代器的遍历操作是线程安全的。
+     */
+    public static void currentReadWrite(){
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
 
+        // 初始化列表
+        for (int i = 0; i < 10000; i++) {
+            list.add(i);
+        }
+
+        // 创建一个读线程
+        Thread reader = new Thread(() -> {
+            synchronized (list) {
+                Iterator<Integer> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    Integer value = iterator.next();
+                    // 模拟读操作的延迟
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("Reader: " + value);
+                }
+            }
+        });
+
+        // 创建一个写线程
+        Thread writer = new Thread(() -> {
+            synchronized (list) {
+                for (int i = 10000; i < 20000; i++) {
+                    list.add(i);
+                    // 模拟写操作的延迟
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        reader.start();
+        writer.start();
+
+        try {
+            reader.join();
+            writer.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } finally {
+        }
+
+    }
     /**
      * 解决了
      */
