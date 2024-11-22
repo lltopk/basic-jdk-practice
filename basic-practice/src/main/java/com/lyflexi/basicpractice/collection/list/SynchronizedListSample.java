@@ -14,6 +14,7 @@ public class SynchronizedListSample {
 
     /**
      * 解决了
+     *
      * @param args
      * @throws InterruptedException
      */
@@ -27,29 +28,28 @@ public class SynchronizedListSample {
     /**
      * 解决了
      */
-    public static void currentWrite(){
+    public static void currentWrite() {
         List<String> list = Collections.synchronizedList(new ArrayList<>());
 
         for (int i = 1; i <= 10; i++) {
-            new Thread(()->{
-                list.add(UUID.randomUUID().toString().substring(0,5));
+            new Thread(() -> {
+                list.add(UUID.randomUUID().toString().substring(0, 5));
                 System.out.println(list);
-            },String.valueOf(i)).start();
+            }, String.valueOf(i)).start();
         }
     }
 
     /**
-     * synchronizedList依然并发异常问题是因为 Collections.synchronizedList 虽然确保了单个方法调用的线程安全，
+     * synchronizedList依然并发异常问题是因为 Collections.synchronizedList 虽然确保了单个方法调用的线程安全，例如 add、remove、get 等。
      * 但它并不能防止在多线程环境中对集合的迭代器进行并发修改。具体来说，Collections.synchronizedList 返回的列表的迭代器并不是线程安全的。
-     *
-     * 问题分析
-     * 迭代器的线程安全性：
-     * Collections.synchronizedList 只确保了单个方法调用的线程安全，例如 add、remove、get 等。
-     * 但是，迭代器的 hasNext 和 next 方法并没有被同步，因此在多线程环境中使用迭代器时，可能会抛出 ConcurrentModificationException。
+     *        public Iterator<E> iterator() {
+     *             return c.iterator(); // Must be manually synched by user!
+     *         }
+     * 因此在多线程环境中使用迭代器时，可能会抛出 ConcurrentModificationException。
      * 解决方案：
      * 你需要在使用迭代器时手动加锁，确保迭代器的遍历操作是线程安全的。
      */
-    public static void currentReadWrite(){
+    public static void currentReadWrite() {
         List<Integer> list = Collections.synchronizedList(new ArrayList<>());
 
         // 初始化列表
@@ -76,17 +76,17 @@ public class SynchronizedListSample {
 
         // 创建一个写线程
         Thread writer = new Thread(() -> {
-            synchronized (list) {
-                for (int i = 10000; i < 20000; i++) {
-                    list.add(i);
-                    // 模拟写操作的延迟
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+
+            for (int i = 10000; i < 20000; i++) {
+                list.add(i);
+                // 模拟写操作的延迟
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
+
         });
 
         reader.start();
@@ -101,11 +101,12 @@ public class SynchronizedListSample {
         }
 
     }
+
     /**
      * 解决了
      */
-    public static void currentRemove()  {
-         List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+    public static void currentRemove() {
+        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
 
         // 初始化列表
         for (int i = 0; i < 10000; i++) {

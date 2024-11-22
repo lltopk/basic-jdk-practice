@@ -48,7 +48,7 @@ public class CopyOnWriteArrayListSample {
      * CopyOnWriteArrayList 的迭代器是安全的，原因如下：
      *
      * 迭代器访问的是数组快照：
-     * 当你调用 iterator() 方法时，CopyOnWriteArrayList 会返回一个迭代器，这个迭代器会访问当前的数组副本。
+     * 当你调用 iterator() 方法时，CopyOnWriteArrayList 会返回特殊的迭代器COWIterator，这个迭代器依然访问的是当前的数组副本。
      * 由于读操作不需要加锁，迭代器在遍历时不会阻塞写操作。
      *
      * 写操作不影响现有迭代器：
