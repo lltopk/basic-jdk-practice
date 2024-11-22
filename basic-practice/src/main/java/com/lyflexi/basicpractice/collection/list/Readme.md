@@ -1,3 +1,74 @@
+# ConcurrentModificationException源码分析
+
+ConcurrentModificationException通常在尝试以非线程安全的方式修改集合时抛出。
+
+下面从 Java 集合框架中的 ArrayList 和其 Iterator 的实现入手。说明这一异常是如何产生的。
+
+在 ArrayList 类中，有一个名为 modCount 的成员变量，用于记录对列表结构进行修改的次数。每当列表发生变化（例如添加或删除元素）时，这个计数器就会增加。
+```java
+public class ArrayList<E> extends AbstractList<E>
+    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
+    
+    // 记录ArrayList被修改的次数
+    protected transient int modCount = 0;
+
+    // 添加元素时调用
+    public boolean add(E e) {
+        ensureCapacityInternal(size + 1);  // Increments modCount!!
+        elementData[size++] = e;
+        return true;
+    }
+
+    // 删除元素时调用
+    public E remove(int index) {
+        rangeCheck(index);
+        modCount++;
+        E oldValue = elementData(index);
+        
+        // 元素移动逻辑...
+        
+        return oldValue;
+    }
+}
+```
+ArrayList 的 Iterator 实现中包含了一个 expectedModCount 变量，它初始化为 ArrayList 的 modCount 值。
+
+每次调用 next() 方法时，都会检查 expectedModCount 是否与 modCount 匹配。
+
+如果不匹配，则意味着在迭代过程中有其他线程或代码块修改了列表，此时会抛出 ConcurrentModificationException 异常。
+```java
+private class Itr implements Iterator<E> {
+    int cursor;       // 下一个要返回的元素的索引
+    int lastRet = -1; // 上一次返回的元素的索引
+    int expectedModCount = modCount;
+
+    public boolean hasNext() {
+        return cursor != size;
+    }
+
+    public E next() {
+        checkForComodification();
+        int i = cursor;
+        if (i >= size)
+            throw new NoSuchElementException();
+        Object[] elementData = ArrayList.this.elementData;
+        if (i >= elementData.length)
+            throw new ConcurrentModificationException();
+        cursor = i + 1;
+        return (E) elementData[lastRet = i];
+    }
+
+    final void checkForComodification() {
+        if (modCount != expectedModCount)
+            throw new ConcurrentModificationException();
+    }
+}
+```
+如何避免出现该异常：
+
+- 并发集合类：对于多线程环境下的集合操作，可以考虑使用 ConcurrentHashMap 或 CopyOnWriteArrayList 等并发安全的集合类。
+- 同步机制：如果必须使用非线程安全的集合，并且在多线程环境中操作，可以通过外部同步来保证线程安全。
+
 # CopyOnWriteArrayList
 
 > `CopyOnWriteArrayList` 的设计允许读操作看到老副本的值，这是其写时(add/remove)复制策略的一部分。
