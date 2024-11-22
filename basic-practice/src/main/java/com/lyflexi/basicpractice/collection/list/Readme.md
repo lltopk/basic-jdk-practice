@@ -6,7 +6,7 @@
 ```java
 private transient volatile Object[] array;
 ```
-但由于COW，依然存在遍历操作（读）看到不是最新状态的数据（当并发线程正在添加数据的时候）
+但由于COW，依然存在遍历操作（读）看到不是最新状态的数据的情况（当并发线程正在添加数据的时候）
 ```java
     /**
      * Inserts the specified element at the specified position in this
@@ -43,6 +43,35 @@ private transient volatile Object[] array;
      */
     public E get(int index) {
         return elementAt(getArray(), index);
+    }
+```
+同样CopyOnWriteArrayList#remove也是线程安全的COW
+```java
+    /**
+     * Removes the element at the specified position in this list.
+     * Shifts any subsequent elements to the left (subtracts one from their
+     * indices).  Returns the element that was removed from the list.
+     *
+     * @throws IndexOutOfBoundsException {@inheritDoc}
+     */
+    public E remove(int index) {
+        synchronized (lock) {
+            Object[] es = getArray();
+            int len = es.length;
+            E oldValue = elementAt(es, index);
+            int numMoved = len - index - 1;
+            Object[] newElements;
+            if (numMoved == 0)
+                newElements = Arrays.copyOf(es, len - 1);
+            else {
+                newElements = new Object[len - 1];
+                System.arraycopy(es, 0, newElements, 0, index);
+                System.arraycopy(es, index + 1, newElements, index,
+                                 numMoved);
+            }
+            setArray(newElements);
+            return oldValue;
+        }
     }
 ```
 但这种设计确保了读操作的高性能和线程安全性。对于大多数读多写少的场景，这种行为是可以接受的。
@@ -120,7 +149,9 @@ private transient volatile Object[] array;
         }
 ```
 
-但是需要特别注意synchronizedList的迭代器不是安全的，如果使用到了synchronizedList的迭代器，你需要在使用迭代器时手动加锁，确保迭代器的遍历操作是线程安全的!!!
+但是需要特别注意synchronizedList的迭代器不是安全的：
+
+如果使用到了synchronizedList的迭代器，你需要在使用迭代器时手动加锁，确保迭代器在并发读写场景下的线程安全!!!
 
 ```java
 
