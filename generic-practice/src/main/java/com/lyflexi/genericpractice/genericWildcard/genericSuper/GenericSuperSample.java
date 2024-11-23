@@ -15,7 +15,7 @@ import java.util.List;
  */
 
 /**
- * 下界通配符
+ * 无上界通配符
  */
 public class GenericSuperSample {
 
