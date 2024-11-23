@@ -15,7 +15,7 @@ import java.util.List;
 
 
 /**
- * 上界通配符
+ * 无下界通配符
  */
 public class GenericExtendSample {
 
