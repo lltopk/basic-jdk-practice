@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.superTest;
+package com.lyflexi.basicpractice.superSample;
 
 /**
  * @Author: ly

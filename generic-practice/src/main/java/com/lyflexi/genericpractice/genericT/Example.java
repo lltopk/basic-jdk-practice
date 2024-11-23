@@ -1,4 +1,4 @@
-package com.lyflexi.genericpractice;
+package com.lyflexi.genericpractice.genericT;
 
 /**
  * @Description:

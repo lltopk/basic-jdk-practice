@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.finaltest;
+package com.lyflexi.basicpractice.finalSample;
 
 /**
  * @Description:

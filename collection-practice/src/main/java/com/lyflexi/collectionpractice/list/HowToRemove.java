@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.collection.list;
+package com.lyflexi.collectionpractice.list;
 
 import org.apache.commons.lang3.StringUtils;
 

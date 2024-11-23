@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.superTest;
+package com.lyflexi.basicpractice.superSample;
 
 public class TestSuper {
     public static class Person {

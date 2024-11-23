@@ -1,6 +1,8 @@
-package com.lyflexi.basicpractice.collection.list;
+package com.lyflexi.collectionpractice.list;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -9,12 +11,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @project: basic-jdk-practice
  * @Date: 2024/11/22 16:41
  */
-public class SynchronizedListSample {
+public class CopyOnWriteArrayListSample {
 
+    private static List<Integer> list = new CopyOnWriteArrayList<>();
 
     /**
      * 解决了
-     *
      * @param args
      * @throws InterruptedException
      */
@@ -28,29 +30,33 @@ public class SynchronizedListSample {
     /**
      * 解决了
      */
-    public static void currentWrite() {
-        List<String> list = Collections.synchronizedList(new ArrayList<>());
+    public static void currentWrite(){
+        List<String> list = new CopyOnWriteArrayList<>();
 
         for (int i = 1; i <= 10; i++) {
-            new Thread(() -> {
-                list.add(UUID.randomUUID().toString().substring(0, 5));
+            new Thread(()->{
+                list.add(UUID.randomUUID().toString().substring(0,5));
                 System.out.println(list);
-            }, String.valueOf(i)).start();
+            },String.valueOf(i)).start();
         }
     }
 
     /**
-     * synchronizedList依然并发异常问题是因为 Collections.synchronizedList 虽然确保了单个方法调用的线程安全，例如 add、remove、get 等。
-     * 但它并不能防止在多线程环境中对集合的迭代器进行并发修改。具体来说，Collections.synchronizedList 返回的列表的迭代器并不是线程安全的。
-     *        public Iterator<E> iterator() {
-     *             return c.iterator(); // Must be manually synched by user!
-     *         }
-     * 因此在多线程环境中使用迭代器时，可能会抛出 ConcurrentModificationException。
-     * 解决方案：
-     * 你需要在使用迭代器时手动加锁，确保迭代器的遍历操作是线程安全的。
+     * 解决了：
+     *
+     * CopyOnWriteArrayList 的迭代器是安全的，原因如下：
+     *
+     * 迭代器访问的是数组快照：
+     * 当你调用 iterator() 方法时，CopyOnWriteArrayList 会返回特殊的迭代器COWIterator，这个迭代器依然访问的是当前的数组副本。
+     * 由于读操作不需要加锁，迭代器在遍历时不会阻塞写操作。
+     *
+     * 写操作不影响现有迭代器：
+     * 写操作会创建一个新的数组副本，并在新的数组副本上完成写操作。
+     * 写操作完成后，array 引用会切换到新的数组，但现有的迭代器仍然访问的是旧的数组副本。
+     * 因此，即使在遍历过程中有写操作发生，迭代器也不会抛出 ConcurrentModificationException，也不会看到部分更新的数据。
      */
-    public static void currentReadWrite() {
-        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
+    public static void currentReadWrite(){
+        List<Integer> list = new CopyOnWriteArrayList<>();
 
         // 初始化列表
         for (int i = 0; i < 10000; i++) {
@@ -59,24 +65,21 @@ public class SynchronizedListSample {
 
         // 创建一个读线程
         Thread reader = new Thread(() -> {
-            synchronized (list) {
-                Iterator<Integer> iterator = list.iterator();
-                while (iterator.hasNext()) {
-                    Integer value = iterator.next();
-                    // 模拟读操作的延迟
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("Reader: " + value);
+            Iterator<Integer> iterator = list.iterator();
+            while (iterator.hasNext()) {
+                Integer value = iterator.next();
+                // 模拟读操作的延迟
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                System.out.println("Reader: " + value);
             }
         });
 
         // 创建一个写线程
         Thread writer = new Thread(() -> {
-
             for (int i = 10000; i < 20000; i++) {
                 list.add(i);
                 // 模拟写操作的延迟
@@ -86,7 +89,6 @@ public class SynchronizedListSample {
                     e.printStackTrace();
                 }
             }
-
         });
 
         reader.start();
@@ -101,13 +103,10 @@ public class SynchronizedListSample {
         }
 
     }
-
     /**
      * 解决了
      */
-    public static void currentRemove() {
-        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
-
+    public static void currentRemove()  {
         // 初始化列表
         for (int i = 0; i < 10000; i++) {
             list.add(i);
