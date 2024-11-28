@@ -1,291 +1,105 @@
-# ConcurrentModificationException源码分析
+# List集合中容易出错的移除方法
 
-ConcurrentModificationException通常在尝试以非线程安全的方式修改集合时抛出。
+## list.remove(index)
 
-下面从 Java 集合框架中的 ArrayList 和其 Iterator 的实现入手。说明这一异常是如何产生的。
-
-在 ArrayList 类中，有一个名为 modCount 的成员变量，用于记录对列表结构进行修改的次数。每当列表发生变化（例如添加或删除元素）时，这个计数器就会增加。
+list内部会自动修改索引，元素前移同时长度减少，因此需要注意避免漏删的问题
 ```java
-public class ArrayList<E> extends AbstractList<E>
-    implements List<E>, RandomAccess, Cloneable, java.io.Serializable {
-    
-    // 记录ArrayList被修改的次数
-    protected transient int modCount = 0;
-
-    // 添加元素时调用
-    public boolean add(E e) {
-        ensureCapacityInternal(size + 1);  // Increments modCount!!
-        elementData[size++] = e;
-        return true;
-    }
-
-    // 删除元素时调用
-    public E remove(int index) {
-        rangeCheck(index);
+    /**
+     * Private remove method that skips bounds checking and does not
+     * return the value removed.
+     */
+    private void fastRemove(Object[] es, int i) {
         modCount++;
-        E oldValue = elementData(index);
-        
-        // 元素移动逻辑...
-        
-        return oldValue;
+        final int newSize;
+        if ((newSize = size - 1) > i)
+            System.arraycopy(es, i + 1, es, i, newSize - i);
+        es[size = newSize] = null;
     }
+```
+另外，如果使用是get(i)，相当于用的是拷贝后的item，而不是直接使用当前元素的引用，
+，因此在循环读取的同时删除元素并不会抛出下面的异常：java.util.ConcurrentModificationException
+，只是会出现漏删问题而已
+
+但是如果使用的是迭代器或者foreach直接取的元素引用，再进行删除，则会抛出异常：java.util.ConcurrentModificationException
+，下面进行分析
+
+## list.remove(obj)
+抛出异常：java.util.ConcurrentModificationException
+
+这正式由于上述list内部会自动修改索引的问题导致的
+
+foreach 写法实际上是对的 Iterable、hasNext、next方法的简写。因此从List.iterator()源码着手分析，跟踪iterator()方法，该方法返回了 Itr 迭代器对象。
+```java
+public Iterator<E> iterator() {
+    return new Itr();
 }
 ```
-ArrayList 的 Iterator 实现中包含了一个 expectedModCount 变量，它初始化为 ArrayList 的 modCount 值。
+Itr 类定义如下：
 
-每次调用 next() 方法时，都会检查 expectedModCount 是否与 modCount 匹配。
+通过代码我们发现 Itr 是 ArrayList 中定义的一个私有内部类，在 next、remove方法中都会调用checkForComodification 方法，
 
-如果不匹配，则意味着在迭代过程中有其他线程或代码块修改了列表，此时会抛出 ConcurrentModificationException 异常。
+checkForComodification方法的作用是判断 modCount != expectedModCount是否相等，如果不相等则抛出ConcurrentModificationException异常。
+
+每次正常执行 iterator.remove() 方法后，都会对执行expectedModCount = modCount赋值，保证两个值相等，
+
+iterator.remove():
 ```java
 private class Itr implements Iterator<E> {
-    int cursor;       // 下一个要返回的元素的索引
-    int lastRet = -1; // 上一次返回的元素的索引
-    int expectedModCount = modCount;
-
-    public boolean hasNext() {
-        return cursor != size;
-    }
-
-    public E next() {
-        checkForComodification();
-        int i = cursor;
-        if (i >= size)
-            throw new NoSuchElementException();
-        Object[] elementData = ArrayList.this.elementData;
-        if (i >= elementData.length)
-            throw new ConcurrentModificationException();
-        cursor = i + 1;
-        return (E) elementData[lastRet = i];
-    }
-
-    final void checkForComodification() {
-        if (modCount != expectedModCount)
-            throw new ConcurrentModificationException();
-    }
-}
-```
-如何避免出现该异常：
-
-- 并发集合类：对于多线程环境下的集合操作，可以考虑使用 ConcurrentHashMap 或 CopyOnWriteArrayList 等并发安全的集合类。
-- 同步机制：如果必须使用非线程安全的集合，并且在多线程环境中操作，可以通过外部同步来保证线程安全。
-
-# CopyOnWriteArrayList
-
-> `CopyOnWriteArrayList` 的设计允许读操作看到老副本的值，这是其写时(add/remove)复制策略的一部分。
-
-尽管`CopyOnWriteArrayList`将数组添加了volatile声明
-```java
-private transient volatile Object[] array;
-```
-但由于COW，依然存在遍历操作（读）看到不是最新状态的数据的情况（当并发线程正在添加数据的时候）
-```java
-    /**
-     * Inserts the specified element at the specified position in this
-     * list. Shifts the element currently at that position (if any) and
-     * any subsequent elements to the right (adds one to their indices).
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     */
-    public void add(int index, E element) {
-        synchronized (lock) {
-            Object[] es = getArray();
-            int len = es.length;
-            if (index > len || index < 0)
-                throw new IndexOutOfBoundsException(outOfBounds(index, len));
-            Object[] newElements;
-            int numMoved = len - index;
-            if (numMoved == 0)
-                newElements = Arrays.copyOf(es, len + 1);
-            else {
-                newElements = new Object[len + 1];
-                System.arraycopy(es, 0, newElements, 0, index);
-                System.arraycopy(es, index, newElements, index + 1,
-                                 numMoved);
+        int cursor;       // index of next element to return
+        int lastRet = -1; // index of last element returned; -1 if no such
+        int expectedModCount = modCount;
+ 
+        public boolean hasNext() {
+            return cursor != size;
+        }
+ 
+        @SuppressWarnings("unchecked")
+        public E next() {
+            checkForComodification();
+            int i = cursor;
+            if (i >= size)
+                throw new NoSuchElementException();
+            Object[] elementData = ArrayList.this.elementData;
+            if (i >= elementData.length)
+                throw new ConcurrentModificationException();
+            cursor = i + 1;
+            return (E) elementData[lastRet = i];
+        }
+ 
+        public void remove() {
+            if (lastRet < 0)
+                throw new IllegalStateException();
+            checkForComodification();
+ 
+            try {
+                ArrayList.this.remove(lastRet);
+                cursor = lastRet;
+                lastRet = -1;
+                expectedModCount = modCount;
+            } catch (IndexOutOfBoundsException ex) {
+                throw new ConcurrentModificationException();
             }
-            newElements[index] = element;
-            setArray(newElements);
+        }
+ 
+        final void checkForComodification() {
+            if (modCount != expectedModCount)
+                throw new ConcurrentModificationException();
         }
     }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
-     */
-    public E get(int index) {
-        return elementAt(getArray(), index);
-    }
 ```
-同样CopyOnWriteArrayList#remove也是线程安全的COW
+
+List.remove():
+但是在 foreach/iterator 循环中执行 list.remove(item);会对 list 对象的 modCount 值进行了修改，而 list 对象的迭代器的 expectedModCount 值未进行修改，因此抛出了ConcurrentModificationException异常。
 ```java
     /**
-     * Removes the element at the specified position in this list.
-     * Shifts any subsequent elements to the left (subtracts one from their
-     * indices).  Returns the element that was removed from the list.
-     *
-     * @throws IndexOutOfBoundsException {@inheritDoc}
+     * Private remove method that skips bounds checking and does not
+     * return the value removed.
      */
-    public E remove(int index) {
-        synchronized (lock) {
-            Object[] es = getArray();
-            int len = es.length;
-            E oldValue = elementAt(es, index);
-            int numMoved = len - index - 1;
-            Object[] newElements;
-            if (numMoved == 0)
-                newElements = Arrays.copyOf(es, len - 1);
-            else {
-                newElements = new Object[len - 1];
-                System.arraycopy(es, 0, newElements, 0, index);
-                System.arraycopy(es, index + 1, newElements, index,
-                                 numMoved);
-            }
-            setArray(newElements);
-            return oldValue;
-        }
-    }
-```
-但这种设计确保了读操作的高性能和线程安全性。对于大多数读多写少的场景，这种行为是可以接受的。
-
-如果需要严格的读取一致性，可以考虑其他线程安全的集合实现，如 `Vector` 或 `Collections.synchronizedList`，但这些实现的性能通常不如 `CopyOnWriteArrayList`。
-
-# SynchronizedList
-
-`Collections.synchronizedList(new ArrayList<>());`源码简单粗暴，全加synchronized
-
-```java
-
-  static class SynchronizedList<E>
-        extends SynchronizedCollection<E>
-        implements List<E> {
-        private static final long serialVersionUID = -7754090372962971524L;
-
-        final List<E> list;
-
-        SynchronizedList(List<E> list) {
-            super(list);
-            this.list = list;
-        }
-        SynchronizedList(List<E> list, Object mutex) {
-            super(list, mutex);
-            this.list = list;
-        }
-
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            synchronized (mutex) {return list.equals(o);}
-        }
-        public int hashCode() {
-            synchronized (mutex) {return list.hashCode();}
-        }
-
-        public E get(int index) {
-            synchronized (mutex) {return list.get(index);}
-        }
-        public E set(int index, E element) {
-            synchronized (mutex) {return list.set(index, element);}
-        }
-        public void add(int index, E element) {
-            synchronized (mutex) {list.add(index, element);}
-        }
-        public E remove(int index) {
-            synchronized (mutex) {return list.remove(index);}
-        }
-
-        public int indexOf(Object o) {
-            synchronized (mutex) {return list.indexOf(o);}
-        }
-        public int lastIndexOf(Object o) {
-            synchronized (mutex) {return list.lastIndexOf(o);}
-        }
-
-        public boolean addAll(int index, Collection<? extends E> c) {
-            synchronized (mutex) {return list.addAll(index, c);}
-        }
-
-        public ListIterator<E> listIterator() {
-            return list.listIterator(); // Must be manually synched by user
-        }
-
-        public ListIterator<E> listIterator(int index) {
-            return list.listIterator(index); // Must be manually synched by user
-        }
-
-        public List<E> subList(int fromIndex, int toIndex) {
-            synchronized (mutex) {
-                return new SynchronizedList<>(list.subList(fromIndex, toIndex),
-                                            mutex);
-            }
-        }
-```
-
-但是需要特别注意synchronizedList的迭代器不是安全的：
-
-如果使用到了synchronizedList的迭代器，你需要在使用迭代器时手动加锁，确保迭代器在并发读写场景下的线程安全!!!
-
-```java
-
-    /**
-     * synchronizedList依然并发异常问题是因为 Collections.synchronizedList 虽然确保了单个方法调用的线程安全，例如 add、remove、get 等。
-     * 但它并不能防止在多线程环境中对集合的迭代器进行并发修改。具体来说，Collections.synchronizedList 返回的列表的迭代器并不是线程安全的。
-     *        public Iterator<E> iterator() {
-     *             return c.iterator(); // Must be manually synched by user!
-     *         }
-     * 因此在多线程环境中使用迭代器时，可能会抛出 ConcurrentModificationException。
-     * 解决方案：
-     * 你需要在使用迭代器时手动加锁，确保迭代器的遍历操作是线程安全的。
-     */
-    public static void currentReadWrite() {
-        List<Integer> list = Collections.synchronizedList(new ArrayList<>());
-
-        // 初始化列表
-        for (int i = 0; i < 10000; i++) {
-            list.add(i);
-        }
-
-        // 创建一个读线程
-        Thread reader = new Thread(() -> {
-            synchronized (list) {
-                Iterator<Integer> iterator = list.iterator();
-                while (iterator.hasNext()) {
-                    Integer value = iterator.next();
-                    // 模拟读操作的延迟
-                    try {
-                        Thread.sleep(1);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println("Reader: " + value);
-                }
-            }
-        });
-
-        // 创建一个写线程
-        Thread writer = new Thread(() -> {
-
-            for (int i = 10000; i < 20000; i++) {
-                list.add(i);
-                // 模拟写操作的延迟
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        });
-
-        reader.start();
-        writer.start();
-
-        try {
-            reader.join();
-            writer.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-        }
-
+    private void fastRemove(Object[] es, int i) {
+        modCount++;
+        final int newSize;
+        if ((newSize = size - 1) > i)
+            System.arraycopy(es, i + 1, es, i, newSize - i);
+        es[size = newSize] = null;
     }
 ```

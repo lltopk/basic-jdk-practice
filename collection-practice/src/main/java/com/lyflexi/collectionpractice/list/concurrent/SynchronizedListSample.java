@@ -1,4 +1,4 @@
-package com.lyflexi.collectionpractice.list;
+package com.lyflexi.collectionpractice.list.concurrent;
 
 import java.util.*;
 

@@ -1,36 +1,37 @@
-package com.lyflexi.collectionpractice.list;
+package com.lyflexi.collectionpractice.list.concurrent;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @Description:
  * @Author: lyflexi
  * @project: basic-jdk-practice
- * @Date: 2024/11/22 16:35
+ * @Date: 2024/11/22 16:41
  */
-public class UnsafeList {
-    static List<String> list = new ArrayList<>();
+public class CopyOnWriteArrayListSample {
 
-    public static void main(String[] args) {
+    private static List<Integer> list = new CopyOnWriteArrayList<>();
+
+    /**
+     * 解决了
+     * @param args
+     * @throws InterruptedException
+     */
+    public static void main(String[] args) throws InterruptedException {
 //        currentWrite();
         currentReadWrite();
 //        currentRemove();
+
     }
 
     /**
-     * Exception in thread "10" java.util.ConcurrentModificationException
-     * 	at java.base/java.util.ArrayList$Itr.checkForComodification(ArrayList.java:1013)
-     * 	at java.base/java.util.ArrayList$Itr.next(ArrayList.java:967)
-     * 	at java.base/java.util.AbstractCollection.toString(AbstractCollection.java:456)
-     * 	at java.base/java.lang.String.valueOf(String.java:4220)
-     * 	at java.base/java.io.PrintStream.println(PrintStream.java:1047)
-     * 	at com.lyflexi.basicpractice.collection.list.UnsafeList.lambda$currentWrite$0(UnsafeList.java:27)
-     * 	at java.base/java.lang.Thread.run(Thread.java:840)
+     * 解决了
      */
     public static void currentWrite(){
+        List<String> list = new CopyOnWriteArrayList<>();
 
         for (int i = 1; i <= 10; i++) {
             new Thread(()->{
@@ -41,12 +42,21 @@ public class UnsafeList {
     }
 
     /**
-     * 当读线程在遍历列表时，写线程修改了列表，读线程也是可能会抛出 ConcurrentModificationException。
+     * 解决了：
      *
-     * 这是因为 ArrayList 的迭代器在检测到列表被修改时会抛出此异常。
+     * CopyOnWriteArrayList 的迭代器是安全的，原因如下：
+     *
+     * 迭代器访问的是数组快照：
+     * 当你调用 iterator() 方法时，CopyOnWriteArrayList 会返回特殊的迭代器COWIterator，这个迭代器依然访问的是当前的数组副本。
+     * 由于读操作不需要加锁，迭代器在遍历时不会阻塞写操作。
+     *
+     * 写操作不影响现有迭代器：
+     * 写操作会创建一个新的数组副本，并在新的数组副本上完成写操作。
+     * 写操作完成后，array 引用会切换到新的数组，但现有的迭代器仍然访问的是旧的数组副本。
+     * 因此，即使在遍历过程中有写操作发生，迭代器也不会抛出 ConcurrentModificationException，也不会看到部分更新的数据。
      */
     public static void currentReadWrite(){
-        List<Integer> list = new ArrayList<>();
+        List<Integer> list = new CopyOnWriteArrayList<>();
 
         // 初始化列表
         for (int i = 0; i < 10000; i++) {
@@ -94,12 +104,9 @@ public class UnsafeList {
 
     }
     /**
-     *理想情况下，最终列表的大小应该是 0。
-     * 然而，由于 ArrayList 不是线程安全的，实际输出的列表大小可能会大于 0，因为删除操作没有得到妥善处理，导致一些删除操作失败或被覆盖。
+     * 解决了
      */
     public static void currentRemove()  {
-        List<Integer> list = new ArrayList<>();
-
         // 初始化列表
         for (int i = 0; i < 10000; i++) {
             list.add(i);
@@ -127,7 +134,6 @@ public class UnsafeList {
             throw new RuntimeException(e);
         } finally {
         }
-
 
         System.out.println("Expected size: 0, Actual size: " + list.size());
     }

@@ -11,7 +11,18 @@ import java.util.Iterator;
  * @project: basic-jdk-practice
  * @Date: 2024/11/22 20:51
  */
-public class HowToRemove {
+
+
+/**
+ * list内部会自动修改索引，元素前移同时长度减少，因此需要注意避免漏删的问题
+ *
+ * 另外，如果使用是get(i)，相当于用的是拷贝后的item，而不是直接使用当前元素的引用，
+ * ，因此在循环读取的同时删除元素并不会抛出下面的异常：java.util.ConcurrentModificationException
+ * ，只是会出现漏删问题而已
+ *
+ * 但是如果使用的是迭代器或者foreach直接取的元素引用，再进行删除，则会抛出异常：java.util.ConcurrentModificationException
+ */
+public class HowToRemoveIndex {
     static ArrayList<String> list = new ArrayList<>();
 
     public static void main(String[] args) {
@@ -20,9 +31,10 @@ public class HowToRemove {
         list.add("b");
         list.add("c");
 //        errRemove();
+        errRemoveException();
 //        testRemove1();
 //        testRemove2();
-        testRemove3Recommend();
+//        testRemove3Recommend();
     }
 
     /**
@@ -32,8 +44,24 @@ public class HowToRemove {
      */
     public static void errRemove() {
         for (int i = 0; i < list.size(); i++) {
+            System.out.println("list.size()"+list.size());
             if (StringUtils.equals(list.get(i), "a")) {
                 list.remove(i);
+            }
+        }
+        System.out.println(list);
+    }
+
+
+    /**
+     *
+     */
+    public static void errRemoveException() {
+        Iterator<String> iterator = list.iterator();
+        while(iterator.hasNext()){
+            String next = iterator.next();
+            if (StringUtils.equals(next, "a")) {
+                list.remove(next);
             }
         }
         System.out.println(list);
