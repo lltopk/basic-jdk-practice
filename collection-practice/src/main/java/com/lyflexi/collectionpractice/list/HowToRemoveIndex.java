@@ -30,8 +30,8 @@ public class HowToRemoveIndex {
         list.add("a");
         list.add("b");
         list.add("c");
-//        errRemove();
-        errRemoveException();
+        errRemove();
+//        errRemoveException();
 //        testRemove1();
 //        testRemove2();
 //        testRemove3Recommend();
@@ -41,6 +41,10 @@ public class HowToRemoveIndex {
      * [a, b, c]
      * 不符合我们的预期，原因是每次remove之后，会自动将后续元素前移：
      * Suspicious 'List. remove()' in loop
+     *
+     * list.remove(i); 确实会修改 ArrayList 的内部状态，并且也会更新 modCount。
+     * 然而，这个代码片段并没有直接使用迭代器来遍历列表，而是通过索引进行遍历和删除操作。
+     * 因此，它不会抛出 ConcurrentModificationException
      */
     public static void errRemove() {
         for (int i = 0; i < list.size(); i++) {

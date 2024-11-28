@@ -1,4 +1,7 @@
 # List集合中容易出错的移除方法
+结论：
+- 正确搭配1：不推荐，通过索引遍历形如for int i  =0; i<n;i++ 搭配list.remove(index)/list.remove(obj)【只修改modCount】，但存在漏删的问题，要注意避免
+- 正确搭配2：搭配2中不可将list.remove与iterator混用！！！，增强for循环本质也是迭代器，通过增强for循环/foreach/Iterator遍历+iterator.remove()【同时修改modCount和expectedModCount】，这样不会存在ConcurrentModificationException
 
 ## list.remove(index)
 
