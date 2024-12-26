@@ -53,10 +53,10 @@ public class SampleTest {
             List<List<BillBo>> splitGroupList = groupingBo(groups, mergeRuleKeyword);
             //1. 递归出口
             if (mergeRuleKeywords.size() == 1) {
-                // 2. 分组路径结束，封装数据
+                // 2. 返回结果：分组路径结束，封装数据
                 groupResultList.addAll(splitGroupList);
             } else {
-                // 3. 继续下一步分组
+                // 3. 递归调用：继续下一步分组
                 List<String> splitMergeRuleKeywords = mergeRuleKeywords.subList(1, mergeRuleKeywords.size());
                 groupProcess(groupResultList, splitGroupList, splitMergeRuleKeywords);
             }
