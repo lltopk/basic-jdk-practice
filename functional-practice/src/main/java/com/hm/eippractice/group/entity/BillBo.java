@@ -1,4 +1,4 @@
-package com.hm.functionalpractice.group.entity;
+package com.hm.eippractice.group.entity;
 
 import lombok.Data;
 
