@@ -6,9 +6,8 @@ jdk基础工具调试，如
 - 泛型
 - 异常
 - 拷贝
-- 继承
 - 引用
 - final
 - functional
-
+- eip: Encapsulation inherits polymorphism
  
