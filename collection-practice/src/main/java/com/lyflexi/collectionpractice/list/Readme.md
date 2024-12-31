@@ -3,7 +3,7 @@
 - 正确搭配1：不推荐，通过索引遍历形如for int i  =0; i<n;i++ 搭配list.remove(index)/list.remove(obj)【只修改modCount】，但存在漏删的问题，要注意避免
 - 正确搭配2：搭配2中不可将list.remove与iterator混用！！！，增强for循环本质也是迭代器，通过增强for循环/foreach/Iterator遍历+iterator.remove()【同时修改modCount和expectedModCount】，这样不会存在ConcurrentModificationException
 
-## list.remove(index)
+## list.remove(index)错误分析
 
 list内部会自动修改索引，元素前移同时长度减少，因此需要注意避免漏删的问题
 ```java
@@ -23,10 +23,10 @@ list内部会自动修改索引，元素前移同时长度减少，因此需要�
 ，因此在循环读取的同时删除元素并不会抛出下面的异常：java.util.ConcurrentModificationException
 ，只是会出现漏删问题而已
 
-但是如果使用的是迭代器或者foreach直接取的元素引用，再进行删除，则会抛出异常：java.util.ConcurrentModificationException
+但是如果使用的是迭代器或者foreach直接取的元素引用，用list.remove(obj)进行删除，则会抛出异常：java.util.ConcurrentModificationException
 ，下面进行分析
 
-## list.remove(obj)
+## list.remove(obj)错误分析
 抛出异常：java.util.ConcurrentModificationException
 
 这正式由于上述list内部会自动修改索引的问题导致的
