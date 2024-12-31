@@ -91,7 +91,7 @@ private class Itr implements Iterator<E> {
     }
 ```
 
-List.remove():
+List.remove(item):
 但是在 foreach/iterator 循环中执行 list.remove(item);会对 list 对象的 modCount 值进行了修改，而 list 对象的迭代器的 expectedModCount 值未进行修改，因此抛出了ConcurrentModificationException异常。
 ```java
     /**
