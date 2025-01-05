@@ -43,7 +43,7 @@ Itr 类定义如下：
 
 checkForComodification方法的作用是判断 modCount != expectedModCount是否相等，如果不相等则抛出ConcurrentModificationException异常。
 
-每次正常执行 iterator.remove() 方法后，都会对执行expectedModCount = modCount赋值，保证两个值相等，
+每次正常执行 iterator.remove() 方法后，都会对执行expectedModCount = modCount赋值，保证两个值相等。
 
 iterator.remove():
 ```java
@@ -91,7 +91,7 @@ private class Itr implements Iterator<E> {
     }
 ```
 
-但是在 foreach/iterator 循环中执行 list.remove(obj);
+错误的case：在 foreach/iterator 循环中执行 list.remove(obj);
 ```java
     /**
      * ConcurrentModificationException
@@ -107,7 +107,7 @@ private class Itr implements Iterator<E> {
         System.out.println(list);
     }
 ```
-list.remove(obj) 仅会对 list 对象的 modCount 值进行了修改，而 list 对象的迭代器的 expectedModCount 值未进行修改，因此在下轮iterator.next()过程中，由于Itr#checkForComodification校验抛出了ConcurrentModificationException异常。
+因为list.remove(obj) 仅会对 list 对象的 modCount 值进行了修改，不会对expectedModCount重新赋值，因此在后续的iterator.next()过程中，由于Itr#checkForComodification校验抛出了ConcurrentModificationException异常。
 ```java
         /**
      * Removes the first occurrence of the specified element from this list,
