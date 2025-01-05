@@ -39,7 +39,7 @@ public Iterator<E> iterator() {
 ```
 Itr 类定义如下：
 
-通过代码我们发现 Itr 是 ArrayList 中定义的一个私有内部类，在 next、remove方法中都会调用checkForComodification 方法，
+通过代码我们发现 Itr 是 ArrayList 中定义的一个私有内部类，在 iterator.next()、iterator.remove()方法中都会调用checkForComodification 方法，
 
 checkForComodification方法的作用是判断 modCount != expectedModCount是否相等，如果不相等则抛出ConcurrentModificationException异常。
 
@@ -91,9 +91,56 @@ private class Itr implements Iterator<E> {
     }
 ```
 
-List.remove(item):
-但是在 foreach/iterator 循环中执行 list.remove(item);会对 list 对象的 modCount 值进行了修改，而 list 对象的迭代器的 expectedModCount 值未进行修改，因此抛出了ConcurrentModificationException异常。
+但是在 foreach/iterator 循环中执行 list.remove(obj);
 ```java
+    /**
+     * ConcurrentModificationException
+     */
+    public static void errIteratorRemove() {
+        Iterator<Item> iterator = list.iterator();
+        while (iterator.hasNext()){
+            Item next = iterator.next();
+            if (StringUtils.equals(next.getName(), "item1")) {
+                list.remove(next);
+            }
+        }
+        System.out.println(list);
+    }
+```
+list.remove(obj) 仅会对 list 对象的 modCount 值进行了修改，而 list 对象的迭代器的 expectedModCount 值未进行修改，因此在下轮iterator.next()过程中，由于Itr#checkForComodification校验抛出了ConcurrentModificationException异常。
+```java
+        /**
+     * Removes the first occurrence of the specified element from this list,
+     * if it is present.  If the list does not contain the element, it is
+     * unchanged.  More formally, removes the element with the lowest index
+     * {@code i} such that
+     * {@code Objects.equals(o, get(i))}
+     * (if such an element exists).  Returns {@code true} if this list
+     * contained the specified element (or equivalently, if this list
+     * changed as a result of the call).
+     *
+     * @param o element to be removed from this list, if present
+     * @return {@code true} if this list contained the specified element
+     */
+    public boolean remove(Object o) {
+        final Object[] es = elementData;
+        final int size = this.size;
+        int i = 0;
+        found: {
+            if (o == null) {
+                for (; i < size; i++)
+                    if (es[i] == null)
+                        break found;
+            } else {
+                for (; i < size; i++)
+                    if (o.equals(es[i]))
+                        break found;
+            }
+            return false;
+        }
+        fastRemove(es, i);
+        return true;
+    }
     /**
      * Private remove method that skips bounds checking and does not
      * return the value removed.
