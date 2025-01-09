@@ -17,7 +17,7 @@
 * 子类实例引用无法访问则父类的protected方法
 * 父类实例引用也无法访问该protected方法，即使父类不是抽象类（意味着父类可以实例化）
 
-一定程度上限定了通过实例引用对protected方法的访问权限，因此protected方法仅常用于模版设计模式，不推荐通过实例引用去访问protected方法
+一定程度上限制了通过实例引用对protected方法的访问权限，因此protected方法仅常用于模版设计模式，不推荐通过实例引用去访问protected方法
 
 # private
 
