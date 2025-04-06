@@ -22,6 +22,7 @@
         <module>functional-practice</module>
         <module>eip-practice</module>
         <module>schedule-practice</module>
+        <module>proxy-practice</module>
     </modules>
     <properties>
         <java.version>17</java.version>
