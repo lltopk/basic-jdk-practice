@@ -80,6 +80,14 @@ public class Main {
 
         }
 
+        /**
+         * 同时修改了func1、func2、func3的实现，把hmInterface的引用加进去：
+         * hmInterface.func1();
+         * hmInterface.func2();
+         * hmInterface.func3();
+         * @param methodName
+         * @return
+         */
         @Override
         public String functionBody(String methodName) {
             String context = "  System.out.println(\"before\");\n" +
