@@ -62,7 +62,7 @@ public class HmInterfaceFactory {
     /**
      * 反射创建出对象给到用户
      * @param className
-     * @param handler
+     * @param handler 用户传入的handler自定义逻辑
      * @return
      * @throws Exception
      */
@@ -72,14 +72,15 @@ public class HmInterfaceFactory {
         Constructor<?> constructor = aClass.getConstructor();
         //2. 通过反射创建对象
         HmInterface proxy = (HmInterface) constructor.newInstance();
-        //3. 执行用户自定义的setProxy方法，设置代理前的自己作为代理对象的属性
+        //3. 此时虽然已经有了内存中生成的java文件，和编译后给到jvm的class文件。但其中的自定义属性还是空为，尚未被赋值。
+        // 执行用户自定义的setProxy方法是通过反射赋值，这就是反射的价值，运行时！！
         handler.setProxy(proxy);
         return proxy;
     }
 
     /**
      * 对外暴露的api
-     * @param hmHandler
+     * @param hmHandler  用户传入的handler自定义逻辑
      * @return
      * @throws Exception
      */

@@ -20,7 +20,8 @@ public class Main {
         proxyObject.func2();
         proxyObject.func3();
         System.out.println("---------");
-        //为什么叫setProxy？因为给Proxy对象设置额外的属性，这个额外的属性甚至是代理后的HmInterface
+        // 为什么还要setProxy？因为尽管动态代理工厂在内存中生成了java文件，并编译成了class文件给到jvm, 但class中的自定义属性还为赋值，是空的。在运行时反射赋值，这就是反射的价值！
+        // 为什么叫setProxy？因为给代理对象的属性赋值操作用的是反射，所以命名有反过来的意味
         proxyObject = HmInterfaceFactory.createProxyObject(new LogHandler(proxyObject));
         proxyObject.func1();
         proxyObject.func2();
@@ -63,13 +64,13 @@ public class Main {
             this.hmInterface = hmInterface;
         }
 
-        //为什么叫setProxy？因为给Proxy对象设置额外的属性，这个额外的属性是代理前的HmInterface
         @Override
         public void setProxy(HmInterface proxy) {
             Class<? extends HmInterface> aClass = proxy.getClass();
             Field field = null;
             try {
-                //为什么叫setProxy？因为给Proxy对象设置额外的属性，这个额外的属性甚至是代理后的HmInterface
+                // 为什么还要setProxy？因为尽管动态代理工厂在内存中生成了java文件，并编译成了class文件给到jvm, 但class中的自定义属性还为赋值，是空的。在运行时反射赋值，这就是反射的价值！
+                // 为什么叫setProxy？因为给代理对象的属性赋值操作用的是反射，所以命名有反过来的意味
                 field = aClass.getDeclaredField("hmInterface");
                 field.setAccessible(true);
                 // 虽然编译后的class文件中有这个属性，但是默认并没有赋值，所以这里通过反射手动赋值
