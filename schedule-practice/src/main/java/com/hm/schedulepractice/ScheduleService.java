@@ -50,6 +50,7 @@ public class ScheduleService {
                     nextJob.setStartTime(System.currentTimeMillis() + latelyJob.getDelay());
                     queue.offer(nextJob);
                 } else {
+                    //阻塞到开始执行的时间
                     LockSupport.parkUntil(latelyJob.getStartTime());
                 }
             }
