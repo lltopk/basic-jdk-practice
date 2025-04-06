@@ -26,6 +26,9 @@ public class HmInterfaceFactory {
         String func1Body = handler.functionBody("func1");
         String func2Body = handler.functionBody("func2");
         String func3Body = handler.functionBody("func3");
+        // 虽然可以在内存中生成的java文件，和编译后给到jvm的class文件。但其中的自定义属性还是空为，尚未被赋值。
+        // 所以如果要用hmInterface引用的时候，请务必在使用之前执行用户自定义的setProxy方法是通过反射赋值，这就是反射的价值，运行时！！
+        // 当然了，如果你不适用hmInterface引用，可以不用setProxy方法赋值
         String context = "package com.hm.proxypractice.handsonjdkdynamicproxy;\n" +
                 "\n" +
                 "public class " + className + " implements HmInterface {\n" +
