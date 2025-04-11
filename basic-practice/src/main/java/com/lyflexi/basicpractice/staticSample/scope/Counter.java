@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.staticSample;
+package com.lyflexi.basicpractice.staticSample.scope;
 
 /**
  * 内存分配：静态变量在类加载时由JVM初始化，并且只会在方法区（对于HotSpot虚拟机，就是永久代或元空间）中分配一次内存。

@@ -1,4 +1,4 @@
-package com.lyflexi.basicpractice.staticSample;
+package com.lyflexi.basicpractice.staticSample.scope;
 
 public class TestCounter {
     public static void main(String[] args) {
