@@ -99,8 +99,8 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;     * 默认情况下，Entity的name值为&quot;default&quot;。
 &nbsp;     */
 &nbsp;    private static  void defaultTest() {
-<b class="nc">&nbsp;        Entity entity = new Entity();</b>
-<b class="nc">&nbsp;        log.info(&quot;Entity created: {}&quot;, entity);</b>
+<b class="nc">&nbsp;        Entity bizLogic1 = new Entity();</b>
+<b class="nc">&nbsp;        log.info(&quot;Entity created: {}&quot;, bizLogic1);</b>
 &nbsp;    }
 &nbsp;
 &nbsp;    /**
@@ -108,34 +108,34 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;     * 反射允许在运行时访问类的私有字段和方法。
 &nbsp;     */
 &nbsp;    private static  void reflectFiled() {
-<b class="nc">&nbsp;        Entity entity = new Entity();</b>
-<b class="nc">&nbsp;        log.info(&quot;Entity created: {}&quot;, entity);</b>
+<b class="nc">&nbsp;        Entity bizLogic1 = new Entity();</b>
+<b class="nc">&nbsp;        log.info(&quot;Entity created: {}&quot;, bizLogic1);</b>
 &nbsp;
 &nbsp;        // 反射获取字段值
 &nbsp;        try {
-<b class="nc">&nbsp;            java.lang.reflect.Field idField = entity.getClass().getDeclaredField(&quot;id&quot;);</b>
+<b class="nc">&nbsp;            java.lang.reflect.Field idField = bizLogic1.getClass().getDeclaredField(&quot;id&quot;);</b>
 <b class="nc">&nbsp;            idField.setAccessible(true); // 允许访问私有字段</b>
-<b class="nc">&nbsp;            Long idValue = (Long) idField.get(entity);</b>
+<b class="nc">&nbsp;            Long idValue = (Long) idField.get(bizLogic1);</b>
 <b class="nc">&nbsp;            log.info(&quot;ID field value: {}&quot;, idValue);</b>
 &nbsp;
-<b class="nc">&nbsp;            java.lang.reflect.Field nameField = entity.getClass().getDeclaredField(&quot;name&quot;);</b>
+<b class="nc">&nbsp;            java.lang.reflect.Field nameField = bizLogic1.getClass().getDeclaredField(&quot;name&quot;);</b>
 <b class="nc">&nbsp;            nameField.setAccessible(true); // 允许访问私有字段</b>
-<b class="nc">&nbsp;            String nameValue = (String) nameField.get(entity);</b>
+<b class="nc">&nbsp;            String nameValue = (String) nameField.get(bizLogic1);</b>
 <b class="nc">&nbsp;            log.info(&quot;Name field value: {}&quot;, nameValue);</b>
 &nbsp;        } catch (NoSuchFieldException | IllegalAccessException e) {
 <b class="nc">&nbsp;            log.error(&quot;Error accessing fields: &quot;, e);</b>
 &nbsp;        }
 &nbsp;        // 反射设置字段值
 &nbsp;        try {
-<b class="nc">&nbsp;            java.lang.reflect.Field idField = entity.getClass().getDeclaredField(&quot;id&quot;);</b>
+<b class="nc">&nbsp;            java.lang.reflect.Field idField = bizLogic1.getClass().getDeclaredField(&quot;id&quot;);</b>
 <b class="nc">&nbsp;            idField.setAccessible(true); // 允许访问私有字段</b>
-<b class="nc">&nbsp;            idField.set(entity, 123L); // 设置ID值</b>
+<b class="nc">&nbsp;            idField.set(bizLogic1, 123L); // 设置ID值</b>
 &nbsp;
-<b class="nc">&nbsp;            java.lang.reflect.Field nameField = entity.getClass().getDeclaredField(&quot;name&quot;);</b>
+<b class="nc">&nbsp;            java.lang.reflect.Field nameField = bizLogic1.getClass().getDeclaredField(&quot;name&quot;);</b>
 <b class="nc">&nbsp;            nameField.setAccessible(true); // 允许访问私有字段</b>
-<b class="nc">&nbsp;            nameField.set(entity, &quot;Updated Name&quot;); // 设置Name值</b>
+<b class="nc">&nbsp;            nameField.set(bizLogic1, &quot;Updated Name&quot;); // 设置Name值</b>
 &nbsp;
-<b class="nc">&nbsp;            log.info(&quot;Entity after reflection update: {}&quot;, entity);</b>
+<b class="nc">&nbsp;            log.info(&quot;Entity after reflection update: {}&quot;, bizLogic1);</b>
 &nbsp;        } catch (NoSuchFieldException | IllegalAccessException e) {
 <b class="nc">&nbsp;            log.error(&quot;Error setting fields: &quot;, e);</b>
 &nbsp;        }
@@ -146,19 +146,19 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;     * 反射允许在运行时调用类的私有方法。
 &nbsp;     */
 &nbsp;    private static  void reflectMethod() {
-<b class="fc">&nbsp;        Entity entity = new Entity();</b>
-<b class="fc">&nbsp;        log.info(&quot;Entity created: {}&quot;, entity);</b>
+<b class="fc">&nbsp;        Entity bizLogic1 = new Entity();</b>
+<b class="fc">&nbsp;        log.info(&quot;Entity created: {}&quot;, bizLogic1);</b>
 &nbsp;        // 反射执行方法
 &nbsp;        try {
-<b class="fc">&nbsp;            java.lang.reflect.Method setIdMethod = entity.getClass().getDeclaredMethod(&quot;setId&quot;, Long.class);</b>
+<b class="fc">&nbsp;            java.lang.reflect.Method setIdMethod = bizLogic1.getClass().getDeclaredMethod(&quot;setId&quot;, Long.class);</b>
 <b class="fc">&nbsp;            setIdMethod.setAccessible(true); // 允许访问私有方法</b>
-<b class="fc">&nbsp;            setIdMethod.invoke(entity, 456L); // 调用setId方法</b>
+<b class="fc">&nbsp;            setIdMethod.invoke(bizLogic1, 456L); // 调用setId方法</b>
 &nbsp;
-<b class="fc">&nbsp;            java.lang.reflect.Method setNameMethod = entity.getClass().getDeclaredMethod(&quot;setName&quot;, String.class);</b>
+<b class="fc">&nbsp;            java.lang.reflect.Method setNameMethod = bizLogic1.getClass().getDeclaredMethod(&quot;setName&quot;, String.class);</b>
 <b class="fc">&nbsp;            setNameMethod.setAccessible(true); // 允许访问私有方法</b>
-<b class="fc">&nbsp;            setNameMethod.invoke(entity, &quot;New Name&quot;); // 调用setName方法</b>
+<b class="fc">&nbsp;            setNameMethod.invoke(bizLogic1, &quot;New Name&quot;); // 调用setName方法</b>
 &nbsp;
-<b class="fc">&nbsp;            log.info(&quot;Entity after reflection method update: {}&quot;, entity);</b>
+<b class="fc">&nbsp;            log.info(&quot;Entity after reflection method update: {}&quot;, bizLogic1);</b>
 &nbsp;        } catch (NoSuchMethodException | IllegalAccessException | java.lang.reflect.InvocationTargetException e) {
 <b class="nc">&nbsp;            log.error(&quot;Error invoking methods: &quot;, e);</b>
 &nbsp;        }

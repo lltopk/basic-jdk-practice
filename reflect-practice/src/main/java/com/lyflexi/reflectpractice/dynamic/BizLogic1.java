@@ -1,16 +1,14 @@
 package com.lyflexi.reflectpractice.dynamic;
 
-import lombok.Data;
-
-public class Entity {
+public class BizLogic1 {
     private Long id;
     private String name = "default";
 
-    public Entity(Long id, String name) {
+    public BizLogic1(Long id, String name) {
         this.id = id;
         this.name = name;
     }
-    public Entity() {
+    public BizLogic1() {
         // Default constructor
     }
 
@@ -37,8 +35,13 @@ public class Entity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Entity entity = (Entity) o;
-        return id != null && id.equals(entity.id) &&
-                name != null && name.equals(entity.name);
+        BizLogic1 bizLogic1 = (BizLogic1) o;
+        return id != null && id.equals(bizLogic1.id) &&
+                name != null && name.equals(bizLogic1.name);
+    }
+
+    public void doSomething(String action) {
+        // 业务逻辑方法
+        System.out.println("Doing something with BizLogic1: " + action);
     }
 }

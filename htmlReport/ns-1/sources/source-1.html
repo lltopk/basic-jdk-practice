@@ -126,9 +126,9 @@ Current scope:     <a href="../../index.html">all classes</a>
 &nbsp;    public boolean equals(Object o) {
 <b class="nc">&nbsp;        if (this == o) return true;</b>
 <b class="nc">&nbsp;        if (o == null || getClass() != o.getClass()) return false;</b>
-<b class="nc">&nbsp;        Entity entity = (Entity) o;</b>
-<b class="nc">&nbsp;        return id != null &amp;&amp; id.equals(entity.id) &amp;&amp;</b>
-<b class="nc">&nbsp;                name != null &amp;&amp; name.equals(entity.name);</b>
+<b class="nc">&nbsp;        Entity bizLogic1 = (Entity) o;</b>
+<b class="nc">&nbsp;        return id != null &amp;&amp; id.equals(bizLogic1.id) &amp;&amp;</b>
+<b class="nc">&nbsp;                name != null &amp;&amp; name.equals(bizLogic1.name);</b>
 &nbsp;    }
 &nbsp;}
 </code>
