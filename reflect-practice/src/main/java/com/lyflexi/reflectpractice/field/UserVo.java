@@ -14,6 +14,7 @@ public class UserVo {
     //前端Long型精度丢失，所以必须转为String返回前端
     private String id;
 
+    public Integer age;
     private LocalDateTime addTime;
     private String addUserName;
     private String addUserCode;
