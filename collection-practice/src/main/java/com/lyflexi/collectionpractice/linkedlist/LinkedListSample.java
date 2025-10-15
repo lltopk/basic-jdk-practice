@@ -38,15 +38,13 @@ public class LinkedListSample {
      * 将引用指向新的地址, 不影响原有复制出来的临时引用的指向以及原地址的内容
      *
      * 1. Node<E> prev = l.prev; 此时prev和l.prev指向同一地址内容
-     * prev------------------------------
-     *                                  |
-     *                                  |
-     * l.prev----------------------> content
+     * prev------------------------>
+     *                              content
+     * l.prev---------------------->
      *
      *
      * 2. l.prev = null// help GC, 此时不影响原有复制出来的临时引用prev的指向, 依然是content
-     * prev----------------------------> content
-     *
+     * prev(原有复制出来的临时引用)---- > content
      *
      * l.prev----------------------> null
      */
