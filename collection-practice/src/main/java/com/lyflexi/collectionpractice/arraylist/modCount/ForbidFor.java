@@ -1,4 +1,4 @@
-package com.lyflexi.collectionpractice.list.modCount;
+package com.lyflexi.collectionpractice.arraylist.modCount;
 
 import java.util.ArrayList;
 import java.util.List;

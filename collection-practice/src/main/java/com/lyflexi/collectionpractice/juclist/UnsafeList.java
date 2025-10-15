@@ -1,4 +1,4 @@
-package com.lyflexi.collectionpractice.list.concurrent;
+package com.lyflexi.collectionpractice.juclist;
 
 import java.util.ArrayList;
 import java.util.Iterator;
