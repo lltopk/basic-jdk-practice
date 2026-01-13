@@ -1,7 +1,7 @@
-package com.hm.eippractice.group;
+package com.hm.functionalpractice.group;
 
-import com.hm.eippractice.group.entity.BillBo;
-import com.hm.eippractice.group.enums.MergeFieldEnum;
+import com.hm.functionalpractice.group.entity.BillBo;
+import com.hm.functionalpractice.group.enums.MergeFieldEnum;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

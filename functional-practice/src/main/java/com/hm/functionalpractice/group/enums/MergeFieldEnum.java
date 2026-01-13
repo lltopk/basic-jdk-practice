@@ -1,6 +1,6 @@
-package com.hm.eippractice.group.enums;
+package com.hm.functionalpractice.group.enums;
 
-import com.hm.eippractice.group.entity.BillBo;
+import com.hm.functionalpractice.group.entity.BillBo;
 import lombok.Getter;
 
 import java.util.function.Function;

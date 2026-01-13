@@ -1,13 +1,13 @@
-package com.hm.eippractice;
+package com.hm.streampractice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class FunctionalPracticeApplication {
+public class StreamPracticeApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FunctionalPracticeApplication.class, args);
+        SpringApplication.run(StreamPracticeApplication.class, args);
     }
 
 }
