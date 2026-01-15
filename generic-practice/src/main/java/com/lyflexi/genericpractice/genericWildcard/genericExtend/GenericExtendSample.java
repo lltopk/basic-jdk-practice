@@ -1,8 +1,10 @@
 package com.lyflexi.genericpractice.genericWildcard.genericExtend;
 
-import com.lyflexi.genericpractice.genericWildcard.common.Animal;
+import com.lyflexi.genericpractice.genericWildcard.common.IAnimalAction;
 import com.lyflexi.genericpractice.genericWildcard.common.Dog;
+import com.lyflexi.genericpractice.genericWildcard.common.Husky;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,37 +22,29 @@ import java.util.List;
 public class GenericExtendSample {
 
     public static void main(String[] args) {
-        List<Dog> animalsDog = new ArrayList<Dog>();
-        Dog dog1 = new Dog();
-        dog1.setName("dog1");
-        Dog dog2 = new Dog();
-        dog2.setName("dog2");
-        animalsDog.add(dog1);
-        animalsDog.add(dog2);
-        //解决了泛型集合的赋值问题
-        printAnimals(animalsDog);
+        printAnimal(Dog.class, "my name is dog");
+        printAnimal(Husky.class, "my name is husky");
     }
 
-    /**
-     * ？ extend 的特性
-     */
-    public static void test(){
-        List<? extends Animal> animalsDog = new ArrayList<Dog>();  //   可以
-        // 但是！编译器："这个盒子可能是装狗的，也可能是装猫的", 我不能让你往里面放任何东物，因为不知道具体是啥"
-        //animalsDog.add(new Dog()); // ❌ 编译报错
-        //animalsDog.add(new Animal()); // ❌ 还是报错
-        Animal dog = animalsDog.get(0); // ✅ 读取没问题
-    }
 
     /**
-     * 解决了泛型集合引用的接收问题
-     *
-     * 接收后的集合仅仅适用于读取元素
-     * @param animals
+     * 使用? extend实现类似于面向接口编程的效果
+     * @param aClass
      */
-    public static void printAnimals(List<? extends Animal> animals) {
-        for (Animal a : animals) { // 安全，因为知道都是Animal
-            System.out.println(a.getName());
+    public static void printAnimal(Class<? extends IAnimalAction> aClass, String key) {
+        try {
+            IAnimalAction action = aClass.newInstance();
+            try {
+                Field name = aClass.getField("name");
+                name.set(action,key);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+            action.print();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 

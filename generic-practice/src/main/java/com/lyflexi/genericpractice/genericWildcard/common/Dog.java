@@ -11,6 +11,10 @@ import lombok.Data;
  */
 @Data
 @AllArgsConstructor
-public class Dog extends Animal{
+public class Dog extends AbstractAnimal {
 
+    @Override
+    public void print() {
+        System.out.println("Dog: "+name);
+    }
 }
