@@ -1,4 +1,4 @@
-package com.lyflexi.genericpractice.grammar;
+package com.lyflexi.genericpractice.genericInstance;
 
 /**
  * @Description:
@@ -17,9 +17,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 @Slf4j
-public class ApiSample {
+public class GenInstanceSample {
 
-    private static final Logger logger = LoggerFactory.getLogger(ApiSample.class);
+    private static final Logger logger = LoggerFactory.getLogger(GenInstanceSample.class);
 
     // 使用自定义类作为 T 的类型
     static class CustomClass {
@@ -105,6 +105,12 @@ public class ApiSample {
     }
 
 
+    /**
+     * 接收Class<T> cls, 生成相应的实例T返回
+     * @param clazz
+     * @return
+     * @param <T>
+     */
     private <T> T initTarget(Class<T> clazz){
 
         // 获取构造函数, 默认是无参构造, 当有参构造的时候获取的是有参构造
@@ -147,15 +153,15 @@ public class ApiSample {
     }
 
     public static void main(String[] args) {
-        ApiSample apiSample = new ApiSample();
+        GenInstanceSample genInstanceSample = new GenInstanceSample();
 
         // 使用 Integer 类作为 T 的类型
-        apiSample.useClass(Integer.class);
+        genInstanceSample.useClass(Integer.class);
         // 使用 String 类作为 T 的类型
-        apiSample.useClass(String.class);
+        genInstanceSample.useClass(String.class);
 
         // 使用 自定义 类作为 T 的类型, 并生成实例返回
-        CustomClass customClass = apiSample.initTarget(CustomClass.class);
+        CustomClass customClass = genInstanceSample.initTarget(CustomClass.class);
         customClass.printXY();
     }
 }
