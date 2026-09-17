@@ -21,6 +21,7 @@
         <module>collection-practice</module>
         <module>functional-practice</module>
         <module>eip-practice</module>
+        <module>cls-load-practice</module>
         <module>schedule-practice</module>
         <module>proxy-practice</module>
         <module>stream-practice</module>
